@@ -16,7 +16,7 @@ def show_login_page():
                 if data["success"]:
                     st.session_state['login_status'] = True
                     st.session_state['username'] = username
-                    st.experimental_rerun()
+                    st.rerun()
                 else:
                     st.error(data["message"])
             else:
@@ -24,4 +24,4 @@ def show_login_page():
                 
     if st.button("Register"):
         st.session_state['current_page'] = 'register'
-        st.experimental_rerun()
+        st.rerun()

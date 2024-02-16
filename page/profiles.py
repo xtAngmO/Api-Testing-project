@@ -13,8 +13,3 @@ def show_user_profile():
         st.write(f"Age: {data['age']}")
     else:
         st.error("User profile not found.")
-
-    if st.button('Logout'):
-        st.session_state['login_status'] = False
-        st.session_state['username'] = ''
-        st.experimental_rerun()
