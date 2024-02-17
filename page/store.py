@@ -26,15 +26,16 @@ def show_store():
                         <div style="margin-bottom: 10px;">
                             <h5 style="margin:0;">{product['product_name']}</h5>
                             <p style="margin:0;color: orange;">${product['price']}</p>
-                            <p style="margin:0;">Amount: {product['Amount']}</p>
+                            <p style="margin:0;">Amount: {product['amount']}</p>
                         </div>
                         """
                         st.markdown(product_info, unsafe_allow_html=True)
-                        # st.write(f"**{product['product_name']}** **${product['price']}**")
-                        # st.write(f"Amount : {product['Amount']}")
-                        quantity = st.number_input("Quantity", min_value=1, max_value=product.get('Amount', 10), value=1, key=f"qty_{product['id_product']}{i+j}")
-                        if st.button("Add to Cart", key=f"add_{product['id_product']}"):
-                            add_to_cart(product, quantity)
+                        if product['amount'] > 0:
+                            quantity = st.number_input("Quantity", min_value=1, max_value=product.get('amount', 10), value=1, key=f"qty_{product['id_product']}{i+j}")
+                            if st.button("Add to Cart", key=f"add_{product['id_product']}"):
+                                add_to_cart(product, quantity)
+                        else:
+                            st.write("Out of Stock")
     else:
         st.error("Failed to fetch products")
 
@@ -79,14 +80,38 @@ def show_store():
         
         
 def add_to_cart(product, quantity):
-    # Example username - you should replace this with the actual username of the logged-in user
-    username = st.session_state['username']
-    # Modify the product dictionary to include the selected quantity
-    product_with_qty = product.copy()
-    product_with_qty['quantity'] = quantity
-    product_with_qty.pop("Amount", None)
-    product_with_qty.pop("image_url", None)
-    cart_response = requests.post(server_url + "/cart", json={"username": username, "product": product_with_qty})
+    username = st.session_state.get('username', 'default_user')
+    
+    # Fetch the current cart for the user
+    cart_response = requests.get(server_url + f"/showcart?username={username}")
+    if cart_response.status_code == 200:
+        cart_items = cart_response.json()
+        existing_quantity = 0
+        # Check if the product is already in the cart and sum up the quantity
+        for item in cart_items:
+            if item['id_product'] == product['id_product']:
+                existing_quantity += item['quantity']
+        
+        # Calculate total quantity after addition
+        total_quantity = existing_quantity + quantity
+
+        # Check if total quantity exceeds product's available amount
+        if total_quantity > product['amount']:
+            st.warning("Cannot add more than the available stock.")
+            return
+        
+        # Proceed to add to cart if the total quantity is within the available stock
+        product_with_qty = {"id_product": product['id_product'], "product_name" : product["product_name"], "quantity": quantity, "price": product['price']}
+        add_cart_response = requests.post(server_url + "/cart", json={"username": username, "product": product_with_qty})
+        
+        if add_cart_response.status_code == 200:
+            st.success("Product added to cart successfully.")
+            st.experimental_rerun()
+        else:
+            st.error("Failed to add product to cart.")
+    else:
+        st.error("Failed to fetch current cart.")
+
         
 def remove_from_cart(item) :
     username = st.session_state['username']
