@@ -4,6 +4,7 @@ from datetime import datetime
 import random
 import secrets
 import bcrypt
+import re
 
 # load mongo database
 db = Database('ApiTesting').db
