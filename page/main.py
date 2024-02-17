@@ -33,7 +33,7 @@ def show_main_page():
 def handle_navigation():
     selected = option_menu(
         menu_title=None,
-        options=["Home", "Store", "Payment" , "History","Profile", "Logout"],  
+        options=["Home", "Store", "Pay" , "History","Profile", "Logout"],  
         icons=["house", "shop", "credit-card", "clock-history","person-fill","box-arrow-right"],
         menu_icon="cast",
         default_index=0,
@@ -45,7 +45,7 @@ def handle_navigation():
         "Store": "store",
         "Profile": "profile",
         "History" : "history",
-        "Payment": "payment", 
+        "Pay": "payment", 
         "Logout": "logout"
     }
     
