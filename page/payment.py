@@ -58,7 +58,7 @@ def show_payment():
             st.image(uploaded_file, caption='Uploaded Payment Slip.', width=100)
             st.success("Payment slip uploaded successfully!")
             if st.button("make payment") :
-                response_mayment = requests.post(server_url + "/payment", json={"username": username})
+                response_mayment = requests.post(server_url + "/payment", json={"username": username, "total_payment" : allPrice['total_payment']})
                 if response_mayment.status_code == 200 :
                     st.success("payment success")
                     st.rerun()

@@ -6,6 +6,7 @@ from page.profiles import show_user_profile
 from page.home import show_home
 from page.store import show_store
 from page.payment import show_payment
+from page.history import show_history
 
 # page/main.py
 def show_main_page():
@@ -26,12 +27,14 @@ def show_main_page():
         show_user_profile()
     elif st.session_state['current_page'] == "payment":
         show_payment()
+    elif st.session_state['current_page'] == "history" :
+        show_history()
         
 def handle_navigation():
     selected = option_menu(
         menu_title=None,
-        options=["Home", "Store", "Payment" , "Profile", "Logout"],  
-        icons=["house", "shop", "person-fill", "credit-card", "box-arrow-right"],
+        options=["Home", "Store", "Payment" , "History","Profile", "Logout"],  
+        icons=["house", "shop", "credit-card", "clock-history","person-fill","box-arrow-right"],
         menu_icon="cast",
         default_index=0,
         orientation="horizontal",
@@ -41,6 +44,7 @@ def handle_navigation():
         "Home": "home",
         "Store": "store",
         "Profile": "profile",
+        "History" : "history",
         "Payment": "payment", 
         "Logout": "logout"
     }

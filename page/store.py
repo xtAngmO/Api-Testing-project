@@ -106,7 +106,7 @@ def add_to_cart(product, quantity):
         
         if add_cart_response.status_code == 200:
             st.success("Product added to cart successfully.")
-            st.experimental_rerun()
+            st.rerun()
         else:
             st.error("Failed to add product to cart.")
     else:

@@ -1,12 +1,23 @@
 from flask import Flask, request, jsonify
 from database import Database
-import re
+from datetime import datetime
+import random
+import secrets
 import bcrypt
 
 # load mongo database
 db = Database('ApiTesting').db
 
 app = Flask(__name__)
+
+def generate_unique_id_order():
+    while True:
+        # Generate a potential id_order
+        potential_id_order = random.randint(100000, 999999)
+        # Check if it already exists in the orders collection
+        existing_order = db['orders'].find_one({"orders.id_order": str(potential_id_order)})
+        if not existing_order:
+            return potential_id_order  # Return it if it's unique
 
 @app.route('/authenticate', methods=['POST'])
 def authenticate():
@@ -227,6 +238,7 @@ def calculateCart():
 def makePayment():
     data = request.json
     username = data.get("username")
+    total_payment = data.get("total_payment")
 
     if not username:
         return jsonify({"error": "Username not provided"}), 400
@@ -255,10 +267,44 @@ def makePayment():
                 {"$set": {"amount": new_amount}}
             )
     
-    # Clear the user's cart after processing the payment
     cart_collection.update_one({"username": username}, {"$set": {"products": []}})
     
-    return jsonify({"message": "Payment successful, products updated"}), 200
+    order_collection = db['orders']
+    if not order_collection.find_one({"username": username}):
+        order_collection.insert_one({"username": username, "orders": []})
+        
+    # Generate a 6-character id_order
+    id_order = generate_unique_id_order()
+    
+    timenow = datetime.now()
+    
+    order_collection.update_one({"username": username}, 
+                                {"$push": 
+                                    {"orders": {
+                                        "time": timenow,
+                                        "id_order": id_order,
+                                        "list" : cart['products'],
+                                        "total_payment": total_payment,
+                                        "status": 'wait',
+                                    }}
+                                })
+    
+    return jsonify({"message": f"Payment successful, products updated, order ID: {id_order}"}), 200
+
+@app.route('/showorder', methods=['GET'])
+def showOrders():
+    username = request.args.get("username")
+    
+    collection = db['orders']
+    
+    if not collection.find_one({"username" : username}) :
+        collection.insert_one({"username": username, "orders": []})
+        
+    response = collection.find_one({"username" : username}, {"_id" : 0})
+    
+    return jsonify(response), 200
+
+
 
 @app.route('/addproduct', methods=['POST'])
 def addProduct():
@@ -328,6 +374,32 @@ def addAmountOfProduct():
     amount = amount + old_amount
     response = collection.update_one({"id_product" : id_product}, {"$set" : {"amount" : amount}})
     return jsonify({"success": True, "message": "edit amount product successfully"}), 200
+
+@app.route('/showallorders', methods=['GET'])
+def showAllOrders() :
+    collection = db['orders']
+    orders = list(collection.find({}, {"_id" : 0}))
+    return jsonify(orders), 200
+    
+
+@app.route('/updateorderstatus', methods=['POST'])
+def updateOrderStatus():
+    data = request.json
+    username = data.get("username")
+    id_order = data.get("id_order")
+    new_status = data.get("status")
+    
+    # Update the order status
+    result = db['orders'].update_one(
+        {"username": username, "orders.id_order": id_order},
+        {"$set": {"orders.$.status": new_status}}
+    )
+    
+    if result.modified_count:
+        return jsonify({"message": "Order status updated successfully"}), 200
+    else:
+        return jsonify({"error": "Order not found or update failed"}), 404
+    
 
 if __name__ == '__main__':
     app.run(debug=True, port=8080)
