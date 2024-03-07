@@ -27,7 +27,7 @@ def show_registration_page():
             if response.status_code == 200:
                 st.success("Registration successful! Please go back to login.")
             else:
-                st.error("Registration failed. Please try again.")
+                st.error(response.json()['message'])
 
     # Moved outside the form
     if st.button("Back to Login"):

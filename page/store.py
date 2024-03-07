@@ -48,7 +48,7 @@ def show_store():
         cart_items = cart_response.json()
         if cart_items:
             st.title("Shopping Cart")
-            cols = st.columns([3, 1, 1, 1,1])
+            cols = st.columns([3, 1, 1, 1, 1])
             with cols[0] :
                 st.write("*image*")
             with cols[1] : 

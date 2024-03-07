@@ -53,30 +53,30 @@ def register():
     age = data.get('age')
     
     if not username or not password or not confirm_password or not firstname or not lastname or not email or not phone_number or not age:
-        return jsonify({"error": "Incomplete information not provided"}), 400
-
-    # Email validation regex
-    email_regex = r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
+        return jsonify({"message": "Incomplete information not provided"}), 400
     
     # Username validation regex
     username_regex = "^[A-Za-z0-9]{6,12}$"
     
     # Password validation regex (at least one letter, 8-24 characters)
-    password_regex = "^(?=.*[A-Za-z])[A-Za-z\d@$!%*#?&]{8,24}$"
+    password_regex = "^(?=.*[A-Za-z])[A-Za-z\\d@$!%*#?&]{8,24}$"
+
+    # Email validation regex
+    email_regex = r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
     
     # Phone number validation regex (exactly 10 digits)
-    phone_number_regex = "^\d{10}$"
-    
-    if not password == confirm_password:
-        return jsonify({"success": False, "message": "Passwords do not match. Please try again."}), 400
+    phone_number_regex = "^\\d{10}$"
 
     # Validate username
     if not re.match(username_regex, username):
         return jsonify({"success": False, "message": "Username must be 6-12 characters long and contain only English letters and numbers."}), 400
-
+    
     # Validate password
     if not re.match(password_regex, password):
         return jsonify({"success": False, "message": "Password must be 8-24 characters long and include at least one English letter."}), 400
+    
+    if not password == confirm_password:
+        return jsonify({"success": False, "message": "Passwords do not match. Please try again."}), 400
 
     # Validate email
     if not re.match(email_regex, email):
@@ -89,7 +89,7 @@ def register():
     # Validate age
     try:
         age = int(age)
-        if age < 0 or age > 120:  # Assuming a reasonable age range
+        if age < 1 or age > 120:  # Assuming a reasonable age range
             raise ValueError
     except ValueError:
         return jsonify({"success": False, "message": "Age must be a number between 0 and 120."}), 400
@@ -141,10 +141,23 @@ def cart():
     
     collection = db['cart']
     user_cart = collection.find_one({"username": username})
+
+    userCollection = db["user_account"]
+    user = userCollection.find_one({"username": username})
+
+    productCollection = db["product"]
+    products = productCollection.find_one({"id_product": product_id})
+
+    if user is None:
+        return jsonify({"success": False, "message": "No User Found"}), 400
+    
+    if products is None:
+        return jsonify({"success": False, "message": "No Product Found"}), 400
     
     if user_cart is None:
         # If the user does not have a cart, create one with the product
         collection.insert_one({"username": username, "products": [product]})
+        return jsonify({"success": True, "message": "Create Cart Success"}), 200
     else:
         # Check if the product exists in the user's cart
         product_index = next((index for (index, p) in enumerate(user_cart["products"]) if p["id_product"] == product_id), None)
@@ -155,11 +168,11 @@ def cart():
             new_quantity = current_quantity + product_quantity
             # Update the quantity of the existing product in the cart
             collection.update_one({"username": username, "products.id_product": product_id}, {"$set": {"products.$.quantity": new_quantity}})
+            return jsonify({"success": True, "message": "Update Cart Success"}), 200
         else:
             # If the product does not exist, add it to the cart
             collection.update_one({"username": username}, {"$push": {"products": product}})
-    
-    return jsonify({"success": True, "message": "Cart updated successfully"}), 200
+            return jsonify({"success": True, "message": "Added Product to the Cart"}), 200
 
 @app.route('/showcart', methods=['GET'])
 def showCart():
@@ -169,21 +182,27 @@ def showCart():
         return jsonify({"error": "Username not provided"}), 400
 
     collection = db['cart']
+    userCollection = db['user_account']
     # Find the document in the collection
     response = collection.find_one({"username": username})
+    userRes = userCollection.find_one({"username": username})
+
+    if userRes is None:
+        return jsonify({"error": "User not found"})
     
     if response is None:
         # If the user does not have a cart, create one with the product
         collection.insert_one({"username": username, "products": []})
 
+    response = collection.find_one({"username": username})
     # Check if the document is found
     if response:
-        # Extract the products field
+    # Extract the products field
         products = response.get("products", [])
         return jsonify(products)
     else:
-        return jsonify({"error": "User not found"}), 404
-    
+        return jsonify({"error": "User not2 found"}), 404
+
 @app.route('/deletecart', methods=['PUT'])
 def deleteCart():
     data = request.json
@@ -232,7 +251,7 @@ def calculateCart():
         countdiscount = total_price*0.05
         total_payment = total_price - countdiscount
         
-    total_payment = total_price - discount1
+    total_payment = total_payment - discount1
     return jsonify({"total_price" : total_price, "total_payment": total_payment, "discount" : countdiscount + discount1}), 200
 
 @app.route('/payment', methods=['POST'])
@@ -290,20 +309,24 @@ def makePayment():
                                     }}
                                 })
     
-    return jsonify({"message": f"Payment successful, products updated, order ID: {id_order}"}), 200
+    # return jsonify({"message": f"Payment successful, products updated, order ID: {id_order}"}), 200
+    return jsonify({"message": "Payment successful, products updated"}), 200
 
 @app.route('/showorder', methods=['GET'])
 def showOrders():
     username = request.args.get("username")
+
+    if not username:
+        return jsonify({"error": "Username not provided"}), 400
     
     collection = db['orders']
     
     if not collection.find_one({"username" : username}) :
-        collection.insert_one({"username": username, "orders": []})
-        
-    response = collection.find_one({"username" : username}, {"_id" : 0})
+        return jsonify({'message': 'No Orders Found'})
+    else:
+        response = collection.find_one({"username" : username}, {"_id" : 0})
+        return jsonify(response), 200
     
-    return jsonify(response), 200
 
 
 
