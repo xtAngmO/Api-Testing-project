@@ -209,7 +209,7 @@ UpdateOrderAPI = serverURL + '/updateorderstatus'
 noinputUpdate = {
     "username" : None,
     "id_order" : None,
-    "new_status": None,
+    "status": None,
 } 
 
 # Test Case 2 : Id order is not exist
@@ -217,7 +217,7 @@ noinputUpdate = {
 IdnotexistUpdate = {
     "username" : "user001",
     "id_order" : 832468,
-    "new_status": "wait",
+    "status": "wait",
 }
 
 # Test Case 3 : Username doesn't exist
@@ -225,7 +225,7 @@ IdnotexistUpdate = {
 UsernamenotExist = {
     "username" : "user002",
     "id_order" : 832469,
-    "new_status" : "wait",
+    "status" : "wait",
 }
 
 # Test Case 4 : Update Complete
@@ -233,16 +233,16 @@ UsernamenotExist = {
 UpdateOrderComplete = {
     "username" : "user001",
     "id_order" : 832469,
-    "new_status": "wait",
+    "status": "wait",
 }
 
 updateorder1 = requests.post(UpdateOrderAPI, json = noinputUpdate)
 updateorder2 = requests.post(UpdateOrderAPI, json = IdnotexistUpdate)
 updateorder3 = requests.post(UpdateOrderAPI, json = UsernamenotExist)
 updateorder4 = requests.post(UpdateOrderAPI, json = UpdateOrderComplete)
-print(updateorder4.json())
+
 def test_Update_order():
     updateorder1.json()['error'] == "Incomplete information not provided"
-    updateorder2.json()['error'] == "Order not found or update failed"
-    updateorder3.json()['error'] ==  "Order not found or update failed"
+    updateorder2.json()['error'] == "id order not found in user"
+    updateorder3.json()['error'] ==  "user not found"
     updateorder4.json()['message'] == "Order status updated successfully"

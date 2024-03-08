@@ -416,16 +416,19 @@ def updateOrderStatus():
     print(data)
     if id_order == "" or new_status == "" or username == "":
         return jsonify({"error": "Incomplete information not provided"}), 400
+    
+    if not db['orders'].find_one({"username" : username}) :
+        return jsonify({"error": "user not found"}), 404
+    
+    if not db['orders'].find_one({"username" : username, "orders" : {"$elemMatch" : {"id_order" : id_order}}}) :
+        return jsonify({"error": "id order not found in user"}), 404
     # Update the order status
     result = db['orders'].update_one(
         {"username": username, "orders.id_order": id_order},
         {"$set": {"orders.$.status": new_status}}
     )
-    
-    if result.modified_count:
-        return jsonify({"message": "Order status updated successfully"}), 200
-    else:
-        return jsonify({"error": "Order not found or update failed"}), 404
+
+    return jsonify({"message": "Order status updated successfully"}), 200
     
 
 if __name__ == '__main__':
