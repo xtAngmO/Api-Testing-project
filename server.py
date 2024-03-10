@@ -339,13 +339,12 @@ def addProduct():
     price = data.get("price")
     amount = data.get("amount")
     image_path = data.get("image_path")
-    
-    if username != 'admin' :
-        return jsonify({"success" : False, "message" : "Admin only"}), 400
-    
-    if not id_product or not price or not amount or not image_path or not product_name :
+    if not id_product or (not price and price != 0) or (not amount and amount != 0) or not image_path or not product_name :
         return jsonify({"error": "Incomplete information not provided"}), 400
-    
+    elif username != 'admin':
+        return jsonify({"success" : False, "message" : "Admin only"}), 400
+    elif price <= 0 or amount <= 0:
+        return jsonify({"success" : False, "message": "Price or amount is can't less or equal 0"}), 400 
     collection = db["product"]
     if collection.find_one({"id_product": id_product}) :
         return jsonify({"success": False, "message": "Id_product already exists. Please choose another."}), 400
@@ -363,6 +362,8 @@ def deleteProduct() :
     data = request.json
     username = data.get("username")
     id_product = data.get("id_product")
+    if username is None or id_product is None:
+        return jsonify({"success" : False , "error" : "Please fill all input to delete"}), 400
     if username != 'admin' :
         return jsonify({"success" : False, "message" : "Admin only"}), 400
     
@@ -382,16 +383,16 @@ def addAmountOfProduct():
     username = data.get("username")
     id_product = data.get("id_product")
     amount = data.get("amount")
+    if not id_product or not amount or not username:
+        return jsonify({"error": "Incomplete information not provided"}), 400
     if username != 'admin' :
         return jsonify({"success" : False, "message" : "Admin only"}), 400
-    
-    if not id_product or not amount :
-        return jsonify({"error": "Incomplete information not provided"}), 400
     
     collection = db["product"]
     if not collection.find_one({"id_product" : id_product}) :
         return jsonify({"error" : "id product not found"}), 400
-    
+    if amount <= 0:
+        return jsonify({"error": "Amount can't less than or equal 0"}),400
     data_old = collection.find_one({"id_product" : id_product})
     old_amount = data_old.get("amount")
     
@@ -412,17 +413,22 @@ def updateOrderStatus():
     username = data.get("username")
     id_order = data.get("id_order")
     new_status = data.get("status")
+    print(data)
+    if id_order == "" or new_status == "" or username == "":
+        return jsonify({"error": "Incomplete information not provided"}), 400
     
+    if not db['orders'].find_one({"username" : username}) :
+        return jsonify({"error": "user not found"}), 404
+    
+    if not db['orders'].find_one({"username" : username, "orders" : {"$elemMatch" : {"id_order" : id_order}}}) :
+        return jsonify({"error": "id order not found in user"}), 404
     # Update the order status
     result = db['orders'].update_one(
         {"username": username, "orders.id_order": id_order},
         {"$set": {"orders.$.status": new_status}}
     )
-    
-    if result.modified_count:
-        return jsonify({"message": "Order status updated successfully"}), 200
-    else:
-        return jsonify({"error": "Order not found or update failed"}), 404
+
+    return jsonify({"message": "Order status updated successfully"}), 200
     
 
 if __name__ == '__main__':
