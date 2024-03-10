@@ -237,7 +237,7 @@ def calculateCart():
     response = collection.find_one({"username": username})
 
     if not response:
-        return jsonify({"error": "Cart not found for the user"}), 404
+        return jsonify({"error": "Cart not found for the user"}), 400
 
     total_price = 0
     for product in response['products']:
