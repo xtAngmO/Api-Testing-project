@@ -553,7 +553,7 @@ addProductForPayment = {
 addToCartAPI = serverURL + '/cart'
 createCartOneforPayment = requests.post(addToCartAPI, json=addProductForPayment)
 
-successPayment = requests.post(paymentAPI + '?username=demoPayment', json={"username": "demoPayment", "total_payment" : 1000})
+successPayment = requests.post(paymentAPI, json={"username": "demoPayment", "total_payment" : 1000})
 
 def test_payment():
     assert noArgPayment.json()['error'] == "Username not provided"
