@@ -327,11 +327,11 @@ showCartAPI = serverURL + '/showcart'
 # Test Case 1 : No "username" Argument
 noArgs_response = requests.get(showCartAPI)
 
-# Test Case 2 : "username" Argument Exists in DB and Cart already created
-existArgsCartCreated_response = requests.get(showCartAPI + '?username=user001')
-
-# Test Case 3 : "username" Argument Doesn't Exist in DB
+# Test Case 2 : "username" Argument Doesn't Exist in DB
 noExistArgs_response = requests.get(showCartAPI + '?username=noExist')
+
+# Test Case 3 : "username" Argument Exists in DB and Cart already created
+existArgsCartCreated_response = requests.get(showCartAPI + '?username=user001')
 
 productsInCreatedCartFromDB = collection.find_one({"username":"user001"})
 productsInNotCreatedCartFromDB = collection.find_one({"username":"admin"})
