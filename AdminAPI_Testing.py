@@ -78,6 +78,7 @@ addproduct3 = requests.post(addproductAPI, json = someIsNone)
 addproduct4 = requests.post(addproductAPI, json = idAlreadyexists)
 addproduct5 = requests.post(addproductAPI, json = less_equalZero)
 addproduct6 = requests.post(addproductAPI, json = completeFrom)
+
 def test_addProduct():
     # Test Case 1 : Not Input Anything
     assert addproduct1.json()['error'] == "Incomplete information not provided"
@@ -91,7 +92,7 @@ def test_addProduct():
     assert addproduct5.json()['message'] == "Price or amount is can't less or equal 0"
     # Test Case 6 : Complete add Product form
     assert addproduct6.json()['message'] == "add product successfully"
-test_addProduct()
+
 # ============================================== Delete product API Testing =========================================================
 
 deleteProductAPI = serverURL + '/deleteproduct'
@@ -190,15 +191,15 @@ addamount5 = requests.put(AddamountAPI, json = addAmountSuccess)
 
 def test_add_amount():
     # Test Case 1 : No Input Anything
-    addamount1.json()['error'] == "Incomplete information not provided"
+    assert addamount1.json()['error'] == "Incomplete information not provided"
     # Test Case 2 : Not admin add amount
-    addamount2.json()['message'] == "Admin only"
+    assert addamount2.json()['message'] == "Admin only"
     # Test Case 3 : Not have a Product
-    addamount3.json()['error'] == "id product not found"
+    assert addamount3.json()['error'] == "id product not found"
     # Test Case 4 : Amount less than 0
-    addamount4.json()['error'] == "Amount can't less than or equal 0"
+    assert addamount4.json()['error'] == "Amount can't less than or equal 0"
     # Test Case 5 : Update Successfully
-    addamount5.json()['message'] == "edit amount product successfully"
+    assert addamount5.json()['message'] == "edit amount product successfully"
 
 # ============================================== Update order status API Testing =========================================================
 
@@ -242,7 +243,34 @@ updateorder3 = requests.post(UpdateOrderAPI, json = UsernamenotExist)
 updateorder4 = requests.post(UpdateOrderAPI, json = UpdateOrderComplete)
 
 def test_Update_order():
-    updateorder1.json()['error'] == "Incomplete information not provided"
-    updateorder2.json()['error'] == "id order not found in user"
-    updateorder3.json()['error'] ==  "user not found"
-    updateorder4.json()['message'] == "Order status updated successfully"
+    assert updateorder1.json()['error'] == "Incomplete information not provided"
+    assert updateorder2.json()['error'] == "id order not found in user"
+    assert updateorder3.json()['error'] ==  "user not found"
+    assert updateorder4.json()['message'] == "Order status updated successfully"
+
+# ============================================== Show User Orders API Testing =========================================================
+ShowAllOrdersAPI = serverURL + '/showallorders'
+
+# Test Case 1 : No input Anything
+noUsernameShowAllOrders = {
+    "username" : None
+} 
+
+# Test Case 2 : Not admin
+notAdminShowAllOrders = {
+    "username" : "user001"
+}
+
+# Test Case 3 : Admin request
+adminShowAllOrders = {
+    "username" : "admin"
+} 
+
+showAllOrders1 = requests.get(ShowAllOrdersAPI, json=noUsernameShowAllOrders)
+showAllOrders2 = requests.get(ShowAllOrdersAPI, json=notAdminShowAllOrders)
+showAllOrders3 = requests.get(ShowAllOrdersAPI, json=adminShowAllOrders)
+
+def test_showAllOrders():
+    assert showAllOrders1.json()['error'] == "Username is not provided"
+    assert showAllOrders2.json()['error'] == "Admin only"
+    assert showAllOrders3.status_code == 200

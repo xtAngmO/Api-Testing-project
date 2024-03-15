@@ -18,7 +18,7 @@ def show_user_profile():
                 st.text(f"Username: {user_profile.get('username', '')}")
                 st.text(f"First Name: {user_profile.get('first_name', '')}")
                 st.text(f"Last Name: {user_profile.get('last_name', '')}")
-                st.text(f"Last Name: {user_profile.get('email', '')}")
+                st.text(f"Email: {user_profile.get('email', '')}")
                 st.text(f"Phone Number: {user_profile.get('phone_number', '')}")
             
             with col2:

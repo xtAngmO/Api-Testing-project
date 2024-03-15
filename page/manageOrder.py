@@ -14,8 +14,11 @@ def update_order_status(username, id_order, new_status):
 
 def show_manageOrder():
     st.header("Manage Orders")
-
-    response = requests.get(f"{server_url}/showallorders")
+    username = st.session_state['username']
+    data = {
+        "username": username
+    }
+    response = requests.get(f"{server_url}/showallorders", json=data)
     if response.status_code == 200:
         all_orders = response.json()
         

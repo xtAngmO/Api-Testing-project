@@ -402,6 +402,14 @@ def addAmountOfProduct():
 
 @app.route('/showallorders', methods=['GET'])
 def showAllOrders() :
+    data = request.json
+    username = data.get("username")
+
+    if username is None:
+        return jsonify({"error": "Username is not provided"}),400
+    if username != 'admin':
+        return jsonify({"error": "Admin only"}),400
+    
     collection = db['orders']
     orders = list(collection.find({}, {"_id" : 0}))
     return jsonify(orders), 200
@@ -414,7 +422,7 @@ def updateOrderStatus():
     id_order = data.get("id_order")
     new_status = data.get("status")
     print(data)
-    if id_order == "" or new_status == "" or username == "":
+    if id_order is None or new_status is None or username is None:
         return jsonify({"error": "Incomplete information not provided"}), 400
     
     if not db['orders'].find_one({"username" : username}) :

@@ -296,7 +296,7 @@ def test_register():
     assert registerRes7_3.json()['message'] == "Registration successful."
     assert registerRes7_4.json()['message'] == "Age must be a number between 0 and 120."
 
-# ============================================== Product API Testing ==============================================
+# # ============================================== Product API Testing ==============================================
 from database import Database
 
 # load mongo database
@@ -462,7 +462,7 @@ def test_deletecart():
     assert productNotFoundRemove.json()['error'] == "Product not found in the cart or username is incorrect"
     assert productSuccessRemove.json()['message'] == "Product removed from cart successfully"
 
-# ============================================== Payment API Testing ==============================================
+# # ============================================== Payment API Testing ==============================================
 # Calculate Cart for Discounts
 calCartAPI = serverURL + '/calculatecart'
 
@@ -490,7 +490,7 @@ calCart3_4Response = requests.get(calCartAPI + '?username=user2000')
 cart3_4 = {"total_price" : 2000, "total_payment": 1900, "discount" : 100}
 
 # Test Case 4 : User Have Cart, User will get "Discount 5% and Every 1000 Baht will get discount 50 baht" with BVA-2
-    # Test Case 4.1 ; Price In Cart = 4999 Baht
+    # Test Case 4.1 ; Price In Cart = 5000 Baht
 calCart4_1Response = requests.get(calCartAPI + '?username=user5000')
 cart4_1 = {"total_price" : 5000, "total_payment": 4750, "discount" : 250}
 
@@ -604,7 +604,7 @@ def test_showorder():
     # Compare the time field
     assert found_order_data['time'] == orders_db_data_time_str
 
-# ============================================== Profile API Testing ==============================================
+# # ============================================== Profile API Testing ==============================================
 profileAPI = serverURL + '/profile'
 
 # Test Case 1 : No 'username' Argument
